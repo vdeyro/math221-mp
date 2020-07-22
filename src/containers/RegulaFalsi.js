@@ -50,7 +50,6 @@ class RegulaFalsi extends React.Component {
   onSubmit = (formValues) => {
     const error = formValues.error ? Number(formValues.error) : 0.0000001
     const decPlaces = Number(formValues.decPlaces)
-    console.log(error)
     let iteration = {
       next_x0: Number(formValues.initial_negative),
       next_x1: Number(formValues.initial_positive)
@@ -67,7 +66,6 @@ class RegulaFalsi extends React.Component {
       // terminating condition
       // either f(x2) == 0 or Ea <= error (default is 0.0000001)
       iteration.value != 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
-    
     this.props.saveResult({
       answer: iteration.x2,
       value: iteration.value,
@@ -97,7 +95,7 @@ class RegulaFalsi extends React.Component {
 
     // get values for next iteration
     results.next_x0 = results.x0
-    results.next_x1 = results.x1
+    results.next_x1 = results.x2
     if (results.value < 0) {
       results.next_x0 = results.x2
       results.next_x1 = results.x1
@@ -109,13 +107,14 @@ class RegulaFalsi extends React.Component {
     try {
       return decPlaces && decPlaces != 0 ? round(evaluate(formula, {x}), decPlaces): evaluate(formula, {x}) 
     } catch (e) {
+      console.log(x,decPlaces)
       console.log(e)
       return ""
     }
   }
 
   renderAnswer = () => {
-    if (this.props.result.answer) return (
+    if (this.props.result.answer || this.props.result.answer === 0) return (
       <Grid columns={1} centered>
         <Grid.Row stretched>
         <Grid.Column>

@@ -139,11 +139,11 @@ class RegulaFalsi extends React.Component {
       <Menu pointing secondary>
           <Menu.Item
             name='Regula Falsi'
-            active={true}
+            onClick={() => history.push('/regula-falsi')}
           />
           <Menu.Item
             name="Bairstow's"
-            onClick={() => history.push('/bairstows')}
+            active={true}
           />
       </Menu>
       <Grid columns={2} centered>
