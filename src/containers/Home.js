@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history'
-import _ from 'lodash';
 import { Button, Card, Grid } from 'semantic-ui-react'
 import './App.css'
 

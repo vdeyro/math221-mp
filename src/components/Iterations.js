@@ -15,7 +15,7 @@ class Iteration extends Component {
 
   renderRows = (iters) => {
     return iters.map((item, index) => {
-      return (<Table.Row key={index} positive={iters.length-1 === index}>
+      return (<Table.Row key={`regula-row-${index}`} positive={iters.length-1 === index}>
       <Table.Cell>{item.x0}</Table.Cell>
       <Table.Cell>{item.x2}</Table.Cell>
       <Table.Cell>{item.x1}</Table.Cell>

@@ -6,7 +6,7 @@ import './App.css'
 import { Field, reduxForm } from 'redux-form'
 import { evaluate, abs, round} from 'mathjs'
 import Iteration from '../components/Iterations'
-import { saveResult } from '../actions';
+import { saveResultRegula } from '../actions';
 
 
 class RegulaFalsi extends React.Component {
@@ -26,14 +26,6 @@ class RegulaFalsi extends React.Component {
       <>
       <Form.Input {...formProps}/>
       </>
-    )
-  }
-
-  renderErrorInput (formProps){
-    return (
-      <Form.Field inline>
-      <Input {...formProps}/>
-      </Form.Field>
     )
   }
 
@@ -65,8 +57,8 @@ class RegulaFalsi extends React.Component {
     } while ( 
       // terminating condition
       // either f(x2) == 0 or Ea <= error (default is 0.0000001)
-      iteration.value != 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
-    this.props.saveResult({
+      iteration.value !== 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
+    this.props.saveResultRegula({
       answer: iteration.x2,
       value: iteration.value,
       iterations
@@ -88,7 +80,7 @@ class RegulaFalsi extends React.Component {
     // calculate x2
     const x = this.calculate(formula, x0, decPlaces)
     const y = this.calculate(formula, x1, decPlaces)
-    results.x2 = decPlaces && decPlaces !=0 ? round(x0 - (x*(x0-x1)/(x-y)), decPlaces) : x0 - (x*(x0-x1)/(x-y))
+    results.x2 = decPlaces && decPlaces !== 0 ? round(x0 - (x*(x0-x1)/(x-y)), decPlaces) : x0 - (x*(x0-x1)/(x-y))
 
     // calculate value
     results.value = this.calculate(formula, results.x2, decPlaces)
@@ -105,7 +97,7 @@ class RegulaFalsi extends React.Component {
 
   calculate(formula, x, decPlaces) {
     try {
-      return decPlaces && decPlaces != 0 ? round(evaluate(formula, {x}), decPlaces): evaluate(formula, {x}) 
+      return decPlaces && decPlaces !== 0 ? round(evaluate(formula, {x}), decPlaces): evaluate(formula, {x}) 
     } catch (e) {
       console.log(x,decPlaces)
       console.log(e)
@@ -193,9 +185,6 @@ const mapStateToProps = state => {
 }
 
 const validate = (formValues) => {
-  const inputs = {
-    x: 0
-  }
   // x0 should not be equal to x1
   const errors = {};
   if (!formValues.formula) {
@@ -204,4 +193,4 @@ const validate = (formValues) => {
   return errors
 }
 
-export default reduxForm({form:'regula', validate})(connect(mapStateToProps, { saveResult } )(RegulaFalsi));
+export default reduxForm({form:'regula', validate})(connect(mapStateToProps, { saveResultRegula } )(RegulaFalsi));

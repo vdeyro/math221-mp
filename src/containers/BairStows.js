@@ -4,12 +4,12 @@ import history from '../history'
 import { Button, Form, Grid, Input, Accordion, Icon, Menu } from 'semantic-ui-react'
 import './App.css'
 import { Field, reduxForm } from 'redux-form'
-import { evaluate, abs, round} from 'mathjs'
-import Iteration from '../components/Iterations'
-import { saveResult } from '../actions';
+import { abs, sqrt, round} from 'mathjs'
+import Iteration from '../components/BairstowIteration'
+import { saveResultBairstow } from '../actions';
 
 
-class RegulaFalsi extends React.Component {
+class Bairstow extends React.Component {
 
   state = { activeIndex: null }
 
@@ -29,14 +29,6 @@ class RegulaFalsi extends React.Component {
     )
   }
 
-  renderErrorInput (formProps){
-    return (
-      <Form.Field inline>
-      <Input {...formProps}/>
-      </Form.Field>
-    )
-  }
-
   renderInitial = (formProps) => {
     return (
       <>
@@ -46,72 +38,121 @@ class RegulaFalsi extends React.Component {
       </>
     )
   }
-  
-  onSubmit = (formValues) => {
-    const error = formValues.error ? Number(formValues.error) : 0.0000001
-    const decPlaces = Number(formValues.decPlaces)
-    console.log(error)
-    let iteration = {
-      next_x0: Number(formValues.initial_negative),
-      next_x1: Number(formValues.initial_positive)
+
+  roundoff = (eq,decPlaces) => {
+    console.log(eq)
+    return decPlaces ? round(eq,decPlaces): eq
+  }
+     
+
+  calculateBairstow = (a, r, s, roots, error, decPlaces, iterations, tmp={}) => {
+    let D;
+    let x1;
+    let x2;
+    if ( a.length === 1 ) {
+      return null
     }
-    let formula = formValues.formula;
-    let iterations = []
-    do {
-  
-      // compute iteration
-      iteration = this.getIteration(formula, iteration.next_x0, iteration.next_x1, decPlaces)
-      // add to result
-      iterations.push({...iteration})
-    } while ( 
-      // terminating condition
-      // either f(x2) == 0 or Ea <= error (default is 0.0000001)
-      iteration.value != 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
+    if ( a.length === 2 && a[1] !== 0) {
+      x1 = this.roundoff(-a[0]/a[1], decPlaces)
+      roots.push(x1)
+      // for display
+      tmp.type = 'direct'
+      tmp.a = a
+      tmp.roots = [x1]
+      iterations.push({...tmp})
+      return null
+    } 
+
+    if ( a.length === 3 ){
+       D = (a[1]**2.0)-(4.0)*(a[2])*(a[0])
+      if ( D > 0 ) { 
+        x1 = this.roundoff((-a[1] - sqrt(D))/(2*a[2]), decPlaces)
+        x2 = this.roundoff((-a[1] + sqrt(D))/(2*a[2]), decPlaces)
+      } else {
+        x1 = String(this.roundoff(((-a[1])/(2*a[2])),decPlaces)) + '-' + this.roundoff(sqrt(abs(D))/(2*a[2]), decPlaces) + 'i'
+        x1 = String(this.roundoff(((-a[1])/(2*a[2])),decPlaces)) + '+' + this.roundoff(sqrt(abs(D))/(2*a[2]), decPlaces) + 'i'
+      }
+
+      // for display
+        tmp.type = 'quadratic'
+        tmp.a = a
+        tmp.roots = [x1,x2]
+        iterations.push({...tmp})
+        roots.push(x1)
+        roots.push(x2)
+      return null
+    }
+
+    let n = a.length
+    let b = Array.apply(null, Array(n)).map(() => 0 )
+    let c = Array.apply(null, Array(n)).map(() => 0 )
     
-    this.props.saveResult({
-      answer: iteration.x2,
-      value: iteration.value,
+    b[n-1] = this.roundoff(a[n-1], decPlaces)
+    b[n-2] = this.roundoff(a[n-2] + (r*b[n-1]), decPlaces)
+    let i = n - 3
+    do {
+      b[i] = this.roundoff(a[i] + (r*b[i+1]) + (s*b[i+2]),decPlaces)
+      i = i - 1
+    } while ( i >= 0)
+    c[n-1] = this.roundoff(b[n-1], decPlaces)
+    c[n-2] = this.roundoff(b[n-2] + (r*c[n-1]), decPlaces)
+    i = n - 3
+    do {
+      c[i] = this.roundoff(b[i] + (r*c[i+1]) + (s*c[i+2]), decPlaces)
+      i = i - 1
+    } while ( i >= 0)
+
+
+    let Din = ((c[2]*c[2])-(c[3]*c[1]))**(-1.0)
+    let rdiff = this.roundoff((Din)*((c[2])*(-b[1])+(-c[3])*(-b[0])), decPlaces)
+    let sdiff = this.roundoff((Din)*((-c[1])*(-b[1])+(c[2])*(-b[0])), decPlaces)
+
+    let rstar = this.roundoff(r + (Din)*((c[2])*(-b[1])+(-c[3])*(-b[0])), decPlaces)
+    let sstar = this.roundoff(s + (Din)*((-c[1])*(-b[1])+(c[2])*(-b[0])), decPlaces)
+
+    // for display
+    tmp.type = 'bairstow'
+    tmp.iteration = tmp.iteration ? tmp.iteration : []
+    tmp.iteration.push({
+      r,s,a,b,c,rdiff,sdiff,rstar,sstar
+    })
+
+    if(this.roundoff(rdiff/rstar, decPlaces) > error || this.roundoff(sdiff/sstar, decPlaces) > error ) {
+      return this.calculateBairstow(a,rstar,sstar,roots,error,decPlaces, iterations,tmp)
+    }
+    if (n >= 3){
+      let Dis = ((-rstar)**(2.0))-((4.0)*(1.0)*(-sstar))
+      if ( Dis > 0 ) { 
+        x1 = this.roundoff((rstar - sqrt(Dis))/(2.0), decPlaces)
+        x2 = this.roundoff((rstar + sqrt(Dis))/(2.0), decPlaces)
+      } else {
+        x1 = String(this.roundoff(((rstar)/(2.0)), decPlaces)) + '-' + this.roundoff(sqrt(abs(Dis))/(2.0), decPlaces) + 'i'
+        x2 = String(this.roundoff(((rstar)/(2.0)), decPlaces)) + '+' + this.roundoff(sqrt(abs(Dis))/(2.0), decPlaces) + 'i'
+      }
+      roots.push(x1)
+      roots.push(x2)
+      // for display
+      tmp.roots = [x1,x2]
+      iterations.push({...tmp})
+
+      // go to next
+      b.splice(0,2)
+      return this.calculateBairstow(b,rstar,sstar,roots,error,decPlaces, iterations)
+    }
+  }
+
+  onSubmit = (formValues) => {
+    const error = formValues.error ? Number(formValues.error)/100 : 0.0001/100
+    const decPlaces = formValues.decPlaces ? Number(formValues.decPlaces) : 4
+    let root = [];
+    let iterations = [];
+    this.calculateBairstow(formValues.formula.split(',').reverse().map(item=>Number(item)),0,0,root,error,decPlaces,iterations);
+
+    this.props.saveResultBairstow({
+      answer: root,
       iterations
     })
-  }
-
-
-  getIteration(formula, x0, x1, decPlaces) {
-    // x2 = c
-    // x0 = a
-    // x1 = b
-    // x2 = c
-    // f(x0) = x
-    // f(x1) = y
-    // c = a - x((b-a)/(x-y))
-    const results = {}
-    results.x0 = x0
-    results.x1 = x1
-    // calculate x2
-    const x = this.calculate(formula, x0, decPlaces)
-    const y = this.calculate(formula, x1, decPlaces)
-    results.x2 = decPlaces && decPlaces !=0 ? round(x0 - (x*(x0-x1)/(x-y)), decPlaces) : x0 - (x*(x0-x1)/(x-y))
-
-    // calculate value
-    results.value = this.calculate(formula, results.x2, decPlaces)
-
-    // get values for next iteration
-    results.next_x0 = results.x0
-    results.next_x1 = results.x1
-    if (results.value < 0) {
-      results.next_x0 = results.x2
-      results.next_x1 = results.x1
-    }
-    return results
-  }
-
-  calculate(formula, x, decPlaces) {
-    try {
-      return decPlaces && decPlaces != 0 ? round(evaluate(formula, {x}), decPlaces): evaluate(formula, {x}) 
-    } catch (e) {
-      console.log(e)
-      return ""
-    }
+  
   }
 
   renderAnswer = () => {
@@ -120,8 +161,7 @@ class RegulaFalsi extends React.Component {
         <Grid.Row stretched>
         <Grid.Column>
           <h3>Answer</h3>
-          <span><strong>x2:</strong> {this.props.result.answer}</span>
-          <span><strong>f(x2):</strong> {this.props.result.value}</span>
+          {this.props.result.answer.map((item, index) => <span key={`result-${index}`}><strong>x:</strong> {item}</span> )}
           <Iteration/>
         </Grid.Column>
         </Grid.Row>
@@ -130,6 +170,42 @@ class RegulaFalsi extends React.Component {
 
     return ""
     
+  }
+
+  renderPolynomialFormula = () => {
+    const arr = this.props.values.formula.split(',')
+    let equation = ""
+    arr.forEach((item, index) => { 
+      let a = abs(arr.length-index-1)
+      let tmp = ''
+      if (Number(item) !== 0 ) {
+        // logic for adding sign
+        // index > 0
+        if ( index > 0) {
+          tmp = Number(item) > 0 ? '+' : ''
+        }
+        // logic if shownumber or not
+        if ( a === 0 ) {
+          tmp = tmp + item
+        } else {
+          if ( Number(item) === 1 ) {
+            tmp = tmp
+          } else if ( Number(item) === -1 ) {
+            tmp = tmp + '-'
+          } else {
+            tmp = tmp + item
+          }
+          // logic for showing x
+          tmp = tmp + 'x'
+          if ( a !== 1 ) {
+            tmp = tmp + '^' + a
+          }
+        }
+      }
+      equation = equation + tmp
+    })
+    //this.calculate(this.props.values.formula, {x: 0}) 
+    return equation
   }
 
   render() {
@@ -149,28 +225,17 @@ class RegulaFalsi extends React.Component {
       <Grid columns={2} centered>
         <Grid.Row stretched>
         <Grid.Column verticalAlign='middle'>
-          <h3>Input Formula</h3>
+          <h3>Input Parameters</h3>
           <Form onSubmit={this.props.handleSubmit(this.onSubmit)}>
-            <Field name="formula" component={this.renderFormula} placeholder='sin(x)+x^2+e^3'/>
+            <Field name="formula" component={this.renderFormula} placeholder='1,0,-1'/>
+            <em>{`Polynomial Equation: ${this.props.values && this.props.values.formula ? this.renderPolynomialFormula() : ""}`}</em>
             <Grid columns={2}>
-            <Grid.Column>
-            <Field name="initial_negative" label="x0" component={this.renderInitial} placeholder='0' />
-            </Grid.Column>
-            <Grid.Column textAlign='left' verticalAlign='middle'>
-            {`Value: ${this.props.values && this.props.values.formula && this.props.values.initial_negative ? this.calculate(this.props.values.formula, Number(this.props.values.initial_negative)) : ""}`}
-            </Grid.Column>
-            <Grid.Column>
-            <Field name="initial_positive" label="x1" component={this.renderInitial} placeholder='1' />
-            </Grid.Column>
-            <Grid.Column textAlign='left' verticalAlign='middle'>
-            {`Value: ${this.props.values && this.props.values.formula && this.props.values.initial_positive ? this.calculate(this.props.values.formula, Number(this.props.values.initial_positive)) : ""}`}
-            </Grid.Column>
             <Grid.Column textAlign="left">
             <Accordion>
               <Accordion.Title active={activeIndex === 0} index={0} onClick={this.handleClick}><Icon name='dropdown' />Extras</Accordion.Title>
                 <Accordion.Content active={activeIndex === 0}>
-                <Field name="error" label="Ea" component={this.renderInitial} placeholder='0.0000001' />
-                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='7' />
+                <Field name="error" label="Ea(%)" component={this.renderInitial} placeholder='0.0001' />
+                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='4' />
                 </Accordion.Content>
             </Accordion>
             </Grid.Column>
@@ -189,14 +254,11 @@ class RegulaFalsi extends React.Component {
 
 const mapStateToProps = state => {
   return { 
-    values: state.form.regula.values,
-    result: state.regulaResult }
+    values: state.form.bairstow.values,
+    result: state.bairstowResult }
 }
 
 const validate = (formValues) => {
-  const inputs = {
-    x: 0
-  }
   // x0 should not be equal to x1
   const errors = {};
   if (!formValues.formula) {
@@ -205,4 +267,4 @@ const validate = (formValues) => {
   return errors
 }
 
-export default reduxForm({form:'regula', validate})(connect(mapStateToProps, { saveResult } )(RegulaFalsi));
+export default reduxForm({form:'bairstow', validate})(connect(mapStateToProps, { saveResultBairstow } )(Bairstow));
