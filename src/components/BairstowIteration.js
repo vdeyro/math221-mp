@@ -73,8 +73,11 @@ class Iteration extends Component {
           );
       }
       else {
+        let a = item.a.slice(0)
+        console.logs(roots)
         return (
             <div className="ui container" key={`direct-${index}`}>
+            <h2>Step</h2>
             <Table celled fixed singleLine >
             <Table.Header>
               <Table.Row>
@@ -84,7 +87,7 @@ class Iteration extends Component {
             </Table.Header>
             <Table.Body>
             <Table.Row positive={true}>
-              <Table.Cell>{item.a}</Table.Cell>
+              <Table.Cell>{a.reverse().join(', ')}</Table.Cell>
               <Table.Cell>{item.roots.join(', ')}</Table.Cell>
             </Table.Row>
             </Table.Body>

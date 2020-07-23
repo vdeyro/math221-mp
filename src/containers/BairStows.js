@@ -39,12 +39,11 @@ class Bairstow extends React.Component {
     )
   }
 
+  // adding decimal places to computations
   roundoff = (eq,decPlaces) => {
-    console.log(eq)
     return decPlaces ? round(eq,decPlaces): eq
   }
      
-
   calculateBairstow = (a, r, s, roots, error, decPlaces, iterations, tmp={}) => {
     let D;
     let x1;
@@ -70,7 +69,7 @@ class Bairstow extends React.Component {
         x2 = this.roundoff((-a[1] + sqrt(D))/(2*a[2]), decPlaces)
       } else {
         x1 = String(this.roundoff(((-a[1])/(2*a[2])),decPlaces)) + '-' + this.roundoff(sqrt(abs(D))/(2*a[2]), decPlaces) + 'i'
-        x1 = String(this.roundoff(((-a[1])/(2*a[2])),decPlaces)) + '+' + this.roundoff(sqrt(abs(D))/(2*a[2]), decPlaces) + 'i'
+        x2 = String(this.roundoff(((-a[1])/(2*a[2])),decPlaces)) + '+' + this.roundoff(sqrt(abs(D))/(2*a[2]), decPlaces) + 'i'
       }
 
       // for display
