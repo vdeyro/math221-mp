@@ -5,8 +5,7 @@ import App from './containers/App';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-export const store = createStore(reducers, composeEnhancers())
+export const store = createStore(reducers)
 
 render(
   <Provider store={store}>
