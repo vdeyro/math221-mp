@@ -4,8 +4,8 @@ This project has been uploaded to http://deyroproject.s3-website-ap-southeast-1.
 
 ## Methods
 
-- [Regula-Falsi](http://deyroproject.s3-website-ap-southeast-1.amazonaws.com/regula-falsi)
-- [Bairstow's](http://deyroproject.s3-website-ap-southeast-1.amazonaws.com/bairstow)
+- Regula-Falsi
+- Bairstow's
 
 # REACT README
 
