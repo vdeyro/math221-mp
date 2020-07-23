@@ -42,8 +42,8 @@ class RegulaFalsi extends React.Component {
   onSubmit = (formValues) => {
     try {
       this.props.saveResultRegula({ loading: true })
-      const error = formValues.error ? Number(formValues.error) : 0.0000001
-      const decPlaces = Number(formValues.decPlaces)
+      const error = formValues.error ? Number(formValues.error) : 0.000001
+      const decPlaces = formValues.decPlaces ? Number(formValues.decPlaces) : 6
       let iteration = {
         next_x0: Number(formValues.initial_negative),
         next_x1: Number(formValues.initial_positive)
@@ -58,7 +58,7 @@ class RegulaFalsi extends React.Component {
         iterations.push({...iteration})
       } while ( 
         // terminating condition
-        // either f(x2) == 0 or Ea <= error (default is 0.0000001)
+        // either f(x2) == 0 or Ea <= error (default is 0.000001)
         iteration.value !== 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
       this.props.saveResultRegula({
         answer: iteration.x2,
@@ -186,8 +186,8 @@ class RegulaFalsi extends React.Component {
             <Accordion>
               <Accordion.Title active={activeIndex === 0} index={0} onClick={this.handleClick}><Icon name='dropdown' />Extras</Accordion.Title>
                 <Accordion.Content active={activeIndex === 0}>
-                <Field name="error" label="Ea" component={this.renderInitial} placeholder='0.0000001' />
-                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='7' />
+                <Field name="error" label="Ea" component={this.renderInitial} placeholder='0.000001' />
+                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='6' />
                 </Accordion.Content>
             </Accordion>
             </Grid.Column>
