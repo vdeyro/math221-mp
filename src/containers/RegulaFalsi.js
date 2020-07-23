@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history'
-import { Button, Form, Grid, Input, Accordion, Icon, Menu } from 'semantic-ui-react'
+import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message } from 'semantic-ui-react'
 import './App.css'
 import { Field, reduxForm } from 'redux-form'
 import { evaluate, abs, round} from 'mathjs'
@@ -40,6 +40,7 @@ class RegulaFalsi extends React.Component {
   }
   
   onSubmit = (formValues) => {
+    try {
     const error = formValues.error ? Number(formValues.error) : 0.0000001
     const decPlaces = Number(formValues.decPlaces)
     let iteration = {
@@ -63,8 +64,14 @@ class RegulaFalsi extends React.Component {
       value: iteration.value,
       iterations
     })
+    } catch (e) {
+      this.props.saveResultRegula({ error: e.message})
+    }
   }
 
+  roundoff = (eq,decPlaces) => {
+    return decPlaces && decPlaces !== 0 ? round(eq,decPlaces): eq
+  }
 
   getIteration(formula, x0, x1, decPlaces) {
     // x2 = c
@@ -80,7 +87,7 @@ class RegulaFalsi extends React.Component {
     // calculate x2
     const x = this.calculate(formula, x0, decPlaces)
     const y = this.calculate(formula, x1, decPlaces)
-    results.x2 = decPlaces && decPlaces !== 0 ? round(x0 - (x*(x0-x1)/(x-y)), decPlaces) : x0 - (x*(x0-x1)/(x-y))
+    results.x2 = this.roundoff(x0 - (x*(x0-x1)/(x-y)), decPlaces)
 
     // calculate value
     results.value = this.calculate(formula, results.x2, decPlaces)
@@ -97,9 +104,8 @@ class RegulaFalsi extends React.Component {
 
   calculate(formula, x, decPlaces) {
     try {
-      return decPlaces && decPlaces !== 0 ? round(evaluate(formula, {x}), decPlaces): evaluate(formula, {x}) 
+      return this.roundoff(evaluate(formula, {x}), decPlaces) 
     } catch (e) {
-      console.log(x,decPlaces)
       console.log(e)
       return ""
     }
@@ -123,6 +129,17 @@ class RegulaFalsi extends React.Component {
     
   }
 
+  renderError = () => {
+    if (this.props.result.error) return (
+      <Message error>
+        <Message.Header>Sorry, we didn't anticipate this :(</Message.Header>
+        <p>{this.props.result.error}</p>
+      </Message>
+    )
+    return ""
+    
+  }
+  
   render() {
     const { activeIndex } = this.state
     return (
@@ -173,6 +190,7 @@ class RegulaFalsi extends React.Component {
         </Grid.Row>
       </Grid>
       {this.renderAnswer()}
+      {this.renderError()}
     </>
     );
   }

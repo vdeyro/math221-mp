@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history'
-import { Button, Form, Grid, Input, Accordion, Icon, Menu } from 'semantic-ui-react'
+import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message } from 'semantic-ui-react'
 import './App.css'
 import { Field, reduxForm } from 'redux-form'
 import { abs, sqrt, round} from 'mathjs'
@@ -41,13 +41,15 @@ class Bairstow extends React.Component {
 
   // adding decimal places to computations
   roundoff = (eq,decPlaces) => {
-    return decPlaces ? round(eq,decPlaces): eq
+    return decPlaces && decPlaces !== 0 ? round(eq,decPlaces): eq
   }
      
   calculateBairstow = (a, r, s, roots, error, decPlaces, iterations, tmp={}) => {
     let D;
     let x1;
     let x2;
+    let atmp = a.slice(0)
+    tmp.polynomialExpression = this.renderPolynomialFormula(atmp.reverse())
     if ( a.length === 1 ) {
       return null
     }
@@ -56,7 +58,6 @@ class Bairstow extends React.Component {
       roots.push(x1)
       // for display
       tmp.type = 'direct'
-      tmp.a = a
       tmp.roots = [x1]
       iterations.push({...tmp})
       return null
@@ -74,7 +75,6 @@ class Bairstow extends React.Component {
 
       // for display
         tmp.type = 'quadratic'
-        tmp.a = a
         tmp.roots = [x1,x2]
         iterations.push({...tmp})
         roots.push(x1)
@@ -115,8 +115,8 @@ class Bairstow extends React.Component {
     tmp.iteration.push({
       r,s,a,b,c,rdiff,sdiff,rstar,sstar
     })
-
-    if(this.roundoff(rdiff/rstar, decPlaces) > error || this.roundoff(sdiff/sstar, decPlaces) > error ) {
+    
+    if(this.roundoff(abs(rdiff/rstar), decPlaces) > error || this.roundoff(abs(sdiff/sstar), decPlaces) > error ) {
       return this.calculateBairstow(a,rstar,sstar,roots,error,decPlaces, iterations,tmp)
     }
     if (n >= 3){
@@ -141,16 +141,20 @@ class Bairstow extends React.Component {
   }
 
   onSubmit = (formValues) => {
-    const error = formValues.error ? Number(formValues.error)/100 : 0.0001/100
-    const decPlaces = formValues.decPlaces ? Number(formValues.decPlaces) : 4
-    let root = [];
-    let iterations = [];
-    this.calculateBairstow(formValues.formula.split(',').reverse().map(item=>Number(item)),0,0,root,error,decPlaces,iterations);
+    try {
+      const error = formValues.error ? Number(formValues.error)/100 : 0.0001/100
+      const decPlaces = formValues.decPlaces ? Number(formValues.decPlaces) : 6
+      let root = [];
+      let iterations = [];
+      this.calculateBairstow(formValues.formula.split(',').reverse().map(item=>Number(item)),0,0,root,error,decPlaces,iterations);
 
-    this.props.saveResultBairstow({
-      answer: root,
-      iterations
-    })
+      this.props.saveResultBairstow({
+        answer: root,
+        iterations
+      })
+    } catch (e) {
+      this.props.saveResultBairstow({ error: e.message})
+    }
   
   }
 
@@ -171,8 +175,17 @@ class Bairstow extends React.Component {
     
   }
 
-  renderPolynomialFormula = () => {
-    const arr = this.props.values.formula.split(',')
+  renderError = () => {
+    if (this.props.result.error) return (
+      <Message error>
+        <Message.Header>Sorry, we didn't anticipate this :(</Message.Header>
+        <p>{this.props.result.error}</p>
+      </Message>
+    )
+    return ""
+  }
+
+  renderPolynomialFormula = (arr) => {
     let equation = ""
     arr.forEach((item, index) => { 
       let a = abs(arr.length-index-1)
@@ -227,14 +240,14 @@ class Bairstow extends React.Component {
           <h3>Input Parameters</h3>
           <Form onSubmit={this.props.handleSubmit(this.onSubmit)}>
             <Field name="formula" component={this.renderFormula} placeholder='1,0,-1'/>
-            <em>{`Polynomial Equation: ${this.props.values && this.props.values.formula ? this.renderPolynomialFormula() : ""}`}</em>
+            <em>{`Polynomial Equation: ${this.props.values && this.props.values.formula ? this.renderPolynomialFormula(this.props.values.formula.split(',')) : ""}`}</em>
             <Grid columns={2}>
             <Grid.Column textAlign="left">
             <Accordion>
               <Accordion.Title active={activeIndex === 0} index={0} onClick={this.handleClick}><Icon name='dropdown' />Extras</Accordion.Title>
                 <Accordion.Content active={activeIndex === 0}>
                 <Field name="error" label="Ea(%)" component={this.renderInitial} placeholder='0.0001' />
-                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='4' />
+                <Field name="decPlaces" label="Decimal Places" component={this.renderInitial} placeholder='6' />
                 </Accordion.Content>
             </Accordion>
             </Grid.Column>
@@ -246,6 +259,7 @@ class Bairstow extends React.Component {
         </Grid.Row>
       </Grid>
       {this.renderAnswer()}
+      {this.renderError()}
     </>
     );
   }

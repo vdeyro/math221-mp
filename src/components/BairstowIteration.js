@@ -36,6 +36,19 @@ class Iteration extends Component {
       if (item.type === "bairstow" ) {
           return (
             <div className="ui container" key={`bairstow-${index}`}>
+              <h3>Step for <em>{item.polynomialExpression}</em></h3>
+              <Table celled fixed singleLine>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>Roots</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                <Table.Row positive={true}>
+                  <Table.Cell>{item.roots.join(', ')}</Table.Cell>
+                </Table.Row>
+              </Table.Body>
+              </Table>
               <Table celled fixed singleLine >
               <Table.Header>
                 <Table.Row>
@@ -43,51 +56,31 @@ class Iteration extends Component {
                   <Table.HeaderCell>s</Table.HeaderCell>
                   <Table.HeaderCell>b</Table.HeaderCell>
                   <Table.HeaderCell>c</Table.HeaderCell>
-                  <Table.HeaderCell>rdiff</Table.HeaderCell>
-                  <Table.HeaderCell>sdiff</Table.HeaderCell>
-                  <Table.HeaderCell>rstar</Table.HeaderCell>
-                  <Table.HeaderCell>sstar</Table.HeaderCell>
+                  <Table.HeaderCell>Rdiff</Table.HeaderCell>
+                  <Table.HeaderCell>Sdiff</Table.HeaderCell>
+                  <Table.HeaderCell>Rstar</Table.HeaderCell>
+                  <Table.HeaderCell>Sstar</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {this.renderRows(item.iteration)}
               </Table.Body>
               </Table>
-              <Table celled fixed singleLine>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>r</Table.HeaderCell>
-                  <Table.HeaderCell>s</Table.HeaderCell>
-                  <Table.HeaderCell>root</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                <Table.Row positive={true}>
-                  <Table.Cell>{item.iteration[item.iteration.length-1].rstar}</Table.Cell>
-                  <Table.Cell>{item.iteration[item.iteration.length-1].sstar}</Table.Cell>
-                  <Table.Cell>{item.roots.join(', ')}</Table.Cell>
-                </Table.Row>
-              </Table.Body>
-              </Table>
             </div>
           );
       }
       else {
-        let a = item.a.slice(0)
-        console.logs(roots)
         return (
             <div className="ui container" key={`direct-${index}`}>
-            <h2>Step</h2>
+            <h3>Step for <em>{item.polynomialExpression}</em></h3>
             <Table celled fixed singleLine >
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>params</Table.HeaderCell>
-                <Table.HeaderCell>roots</Table.HeaderCell>
+                <Table.HeaderCell>Roots</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
             <Table.Row positive={true}>
-              <Table.Cell>{a.reverse().join(', ')}</Table.Cell>
               <Table.Cell>{item.roots.join(', ')}</Table.Cell>
             </Table.Row>
             </Table.Body>
