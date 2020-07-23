@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history'
-import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message } from 'semantic-ui-react'
+import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message, Dimmer, Loader } from 'semantic-ui-react'
 import './App.css'
 import { Field, reduxForm } from 'redux-form'
 import { evaluate, abs, round} from 'mathjs'
@@ -41,29 +41,30 @@ class RegulaFalsi extends React.Component {
   
   onSubmit = (formValues) => {
     try {
-    const error = formValues.error ? Number(formValues.error) : 0.0000001
-    const decPlaces = Number(formValues.decPlaces)
-    let iteration = {
-      next_x0: Number(formValues.initial_negative),
-      next_x1: Number(formValues.initial_positive)
-    }
-    let formula = formValues.formula;
-    let iterations = []
-    do {
-  
-      // compute iteration
-      iteration = this.getIteration(formula, iteration.next_x0, iteration.next_x1, decPlaces)
-      // add to result
-      iterations.push({...iteration})
-    } while ( 
-      // terminating condition
-      // either f(x2) == 0 or Ea <= error (default is 0.0000001)
-      iteration.value !== 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
-    this.props.saveResultRegula({
-      answer: iteration.x2,
-      value: iteration.value,
-      iterations
-    })
+      this.props.saveResultRegula({ loading: true })
+      const error = formValues.error ? Number(formValues.error) : 0.0000001
+      const decPlaces = Number(formValues.decPlaces)
+      let iteration = {
+        next_x0: Number(formValues.initial_negative),
+        next_x1: Number(formValues.initial_positive)
+      }
+      let formula = formValues.formula;
+      let iterations = []
+      do {
+    
+        // compute iteration
+        iteration = this.getIteration(formula, iteration.next_x0, iteration.next_x1, decPlaces)
+        // add to result
+        iterations.push({...iteration})
+      } while ( 
+        // terminating condition
+        // either f(x2) == 0 or Ea <= error (default is 0.0000001)
+        iteration.value !== 0 && !( iterations.length > 2 && abs(iterations[iterations.length-2].x2 - iteration.x2) <= error)  )
+      this.props.saveResultRegula({
+        answer: iteration.x2,
+        value: iteration.value,
+        iterations
+      })
     } catch (e) {
       this.props.saveResultRegula({ error: e.message})
     }
@@ -139,7 +140,15 @@ class RegulaFalsi extends React.Component {
     return ""
     
   }
-  
+
+  renderLoading = () => {
+    if (this.props.result.loading) return (
+      <Dimmer active inverted>
+        <Loader inverted content='Calculating' />
+      </Dimmer>
+    )
+  }
+
   render() {
     const { activeIndex } = this.state
     return (
@@ -191,6 +200,7 @@ class RegulaFalsi extends React.Component {
       </Grid>
       {this.renderAnswer()}
       {this.renderError()}
+      {this.renderLoading()}
     </>
     );
   }

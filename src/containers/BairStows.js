@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import history from '../history'
-import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message } from 'semantic-ui-react'
+import { Button, Form, Grid, Input, Accordion, Icon, Menu, Message, Dimmer, Loader } from 'semantic-ui-react'
 import './App.css'
 import { Field, reduxForm } from 'redux-form'
 import { abs, sqrt, round} from 'mathjs'
@@ -142,6 +142,7 @@ class Bairstow extends React.Component {
 
   onSubmit = (formValues) => {
     try {
+      this.props.saveResultBairstow({ loading: true })
       const error = formValues.error ? Number(formValues.error)/100 : 0.0001/100
       const decPlaces = formValues.decPlaces ? Number(formValues.decPlaces) : 6
       let root = [];
@@ -170,7 +171,6 @@ class Bairstow extends React.Component {
         </Grid.Row>
       </Grid>
     )
-
     return ""
     
   }
@@ -178,11 +178,19 @@ class Bairstow extends React.Component {
   renderError = () => {
     if (this.props.result.error) return (
       <Message error>
-        <Message.Header>Sorry, we didn't anticipate this :(</Message.Header>
+        <Message.Header><Icon name="warning circle"/> Sorry, I didn't anticipate this :(</Message.Header>
         <p>{this.props.result.error}</p>
       </Message>
     )
     return ""
+  }
+
+  renderLoading = () => {
+    if (this.props.result.loading) return (
+      <Dimmer active inverted>
+        <Loader inverted content='Calculating' />
+      </Dimmer>
+    )
   }
 
   renderPolynomialFormula = (arr) => {
@@ -260,6 +268,7 @@ class Bairstow extends React.Component {
       </Grid>
       {this.renderAnswer()}
       {this.renderError()}
+      {this.renderLoading()}
     </>
     );
   }
