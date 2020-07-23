@@ -1,3 +1,14 @@
+# Math221 - Machine Problem
+
+This project has been uploaded to http://deyroproject.s3-website-ap-southeast-1.amazonaws.com/
+
+## Methods
+
+- [Regula-Falsi](http://deyroproject.s3-website-ap-southeast-1.amazonaws.com/regula-falsi)
+- [Bairstow's](http://deyroproject.s3-website-ap-southeast-1.amazonaws.com/bairstow)
+
+# REACT README
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
