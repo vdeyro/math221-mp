@@ -21,7 +21,7 @@ You can also perform manual build by following React Deployment
 ![img](./docs/regula-falsi.png)
   - allowed format samples for the formula/equation is as follows
     - basic equations (addition/subtraction/multiplication/division/parenthesis)
-      - `x+2`
+      - `x+2` `x-1` `x*x` `x/2` `x(x)` `(3+x)/2`
     - power
       - `x^2` `x^(1/2)` `2^-2`
     - sqrt
@@ -68,6 +68,10 @@ You can also perform manual build by following React Deployment
 ![img](./docs/bairstows-answer.png)
   - You can also view the iterations by selecting `Iterations`
   ![img](./docs/bairstows-answer-dropdown.png)
+
+# Reusability
+
+- When calculating for a different set of paramaters (formula, parameters, error etc.), you can change the formula and parameters and click `calculate` to proceed.
 
 # Limitations
 

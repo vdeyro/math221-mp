@@ -50,9 +50,11 @@ class Bairstow extends React.Component {
     let x2;
     let atmp = a.slice(0)
     tmp.polynomialExpression = this.renderPolynomialFormula(atmp.reverse())
+    // a single valued array that represents A
     if ( a.length === 1 ) {
       return null
     }
+    // an array with 2 values that represents Ax+B 
     if ( a.length === 2 && a[1] !== 0) {
       x1 = this.roundoff(-a[0]/a[1], decPlaces)
       roots.push(x1)
@@ -62,7 +64,7 @@ class Bairstow extends React.Component {
       iterations.push({...tmp})
       return null
     } 
-
+    // an array with 3 values that represents Ax^2+Bx^2+C
     if ( a.length === 3 ){
        D = (a[1]**2.0)-(4.0)*(a[2])*(a[0])
       if ( D > 0 ) { 
@@ -82,10 +84,12 @@ class Bairstow extends React.Component {
       return null
     }
 
+    // using synthetic division
     let n = a.length
     let b = Array.apply(null, Array(n)).map(() => 0 )
     let c = Array.apply(null, Array(n)).map(() => 0 )
     
+    // 1st level quotients
     b[n-1] = this.roundoff(a[n-1], decPlaces)
     b[n-2] = this.roundoff(a[n-2] + (r*b[n-1]), decPlaces)
     let i = n - 3
@@ -93,6 +97,8 @@ class Bairstow extends React.Component {
       b[i] = this.roundoff(a[i] + (r*b[i+1]) + (s*b[i+2]),decPlaces)
       i = i - 1
     } while ( i >= 0)
+
+    // 2nd level quotients
     c[n-1] = this.roundoff(b[n-1], decPlaces)
     c[n-2] = this.roundoff(b[n-2] + (r*c[n-1]), decPlaces)
     i = n - 3
@@ -101,7 +107,7 @@ class Bairstow extends React.Component {
       i = i - 1
     } while ( i >= 0)
 
-
+    // computing for the new coefficient's r and s
     let Din = ((c[2]*c[2])-(c[3]*c[1]))**(-1.0)
     let rdiff = this.roundoff((Din)*((c[2])*(-b[1])+(-c[3])*(-b[0])), decPlaces)
     let sdiff = this.roundoff((Din)*((-c[1])*(-b[1])+(c[2])*(-b[0])), decPlaces)
@@ -116,9 +122,12 @@ class Bairstow extends React.Component {
       r,s,a,b,c,rdiff,sdiff,rstar,sstar
     })
     
-    if(this.roundoff(abs(rdiff/rstar), decPlaces) > error || this.roundoff(abs(sdiff/sstar), decPlaces) > error ) {
+    // will move to next iteration if error critera is unsatisfied abs(rdiff/rstar) 
+    if((this.roundoff(abs(rdiff/rstar), decPlaces) > error || this.roundoff(abs(sdiff/sstar)), decPlaces) > error ) {
       return this.calculateBairstow(a,rstar,sstar,roots,error,decPlaces, iterations,tmp)
     }
+
+    // will proceed with calculating roots using the coefficients of the quadratic factor x^2-rx-s
     if (n >= 3){
       let Dis = ((-rstar)**(2.0))-((4.0)*(1.0)*(-sstar))
       if ( Dis > 0 ) { 
