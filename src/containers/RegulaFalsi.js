@@ -39,6 +39,10 @@ class RegulaFalsi extends React.Component {
     )
   }
   
+  roundoff = (eq,decPlaces) => {
+    return decPlaces && decPlaces !== 0 ? round(eq,decPlaces): eq
+  }
+
   onSubmit = (formValues) => {
     try {
       this.props.saveResultRegula({ loading: true })
@@ -68,10 +72,6 @@ class RegulaFalsi extends React.Component {
     } catch (e) {
       this.props.saveResultRegula({ error: e.message})
     }
-  }
-
-  roundoff = (eq,decPlaces) => {
-    return decPlaces && decPlaces !== 0 ? round(eq,decPlaces): eq
   }
 
   getIteration(formula, x0, x1, decPlaces) {
