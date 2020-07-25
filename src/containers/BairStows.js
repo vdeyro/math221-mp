@@ -123,7 +123,7 @@ class Bairstow extends React.Component {
     })
     
     // will move to next iteration if error critera is unsatisfied abs(rdiff/rstar) 
-    if((this.roundoff(abs(rdiff/rstar), decPlaces) > error || this.roundoff(abs(sdiff/sstar)), decPlaces) > error ) {
+    if(this.roundoff(abs(rdiff/rstar), decPlaces) > error || this.roundoff(abs(sdiff/sstar), decPlaces) > error ) {
       return this.calculateBairstow(a,rstar,sstar,roots,error,decPlaces, iterations,tmp)
     }
 

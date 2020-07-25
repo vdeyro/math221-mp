@@ -29,8 +29,8 @@ You can also perform manual build by following React Deployment
     - logarithmic functions
       - `log(x, y)` where y is the base
       - `ln` is not allowed, to replace it we can use `log(x)` which is the same as `log(x,e)`
-    - `e` constant
-      - `e^x` `exp(x)`
+    - `e` and `pi` constant
+      - `e^x` `exp(x)` `pi`
     - trigonometric functions
       - `sin(x)` `cos(x)` `tan(x)`
       - `asin(x)` `acos(x)` `atan(x)`
